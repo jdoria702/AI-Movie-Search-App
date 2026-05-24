@@ -14,6 +14,7 @@ export default function SearchPage() {
     async function handleSearch() {
         const res = await fetch(`/api/search?q=${query}`);
         const data = await res.json();
+        console.log(data.movies);
         setMovies(data.movies);
     }
 
