@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "lucide-react": "^1.16.0",
+    "mongodb": "^7.2.0",
+    "next-auth": "^4.24.14",
+    "zod": "^4.4.3"
+  }
+}
