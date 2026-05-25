@@ -9,7 +9,11 @@ if (!uri) {
   throw new Error("MONGODB_URI is not defined in the environment variables");
 }
 
+// Type is either MongoClient or null if not initialized yet
+// Stores actual connected MongoDB client if available
 let client: MongoClient | null = null;
+
+// Promise that resolves to a connected MongoDB client
 let connectPromise: Promise<MongoClient> | null = null;
 
 // Returns a connected MongoDB client
