@@ -17,6 +17,7 @@ export default function SearchPage() {
             headers: {
                 "Content-Type": "application/json",
             },
+            // Equivanlent to: query: query, but since the key and value are the same, we can just write query
             body: JSON.stringify({ query }),
         });
         const data = await res.json();

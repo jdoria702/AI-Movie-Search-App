@@ -5,6 +5,13 @@ import { getMflixDb } from "@/lib/mongodb";
 import { createEmbedding } from "@/lib/embeddings";
 
 export async function POST(req: NextRequest) {
+  // destructure the body of the request and get the query property from it
+  /*
+      Equivalent to the code:
+
+      const body = await req.json();
+      const query = body.query;
+  */
   const { query } = await req.json();
 
   if (!query) {
@@ -20,18 +27,18 @@ export async function POST(req: NextRequest) {
   const db = await getMflixDb();
 
   const sample = await db.collection("embedded_movies").findOne(
-    { gemini_plot_embedding: { $exists: true } },
-    { projection: { title: 1, gemini_plot_embedding: 1 } }
+    { plot_embedding_voyage_3_large: { $exists: true } },
+    { projection: { title: 1, plot_embedding_voyage_3_large: 1 } }
   );
 
   console.log("sample title:", sample?.title);
-  console.log("stored embedding length:", sample?.gemini_plot_embedding?.length);
+  console.log("stored embedding length:", sample?.plot_embedding_voyage_3_large?.length);
 
   const movies = await db.collection("embedded_movies").aggregate([
     {
         $vectorSearch: {
-        index: "gemini_vector_index",
-        path: "gemini_plot_embedding",
+        index: "voyage_vector_index",
+        path: "plot_embedding_voyage_3_large",
         queryVector: embedding,
         numCandidates: 100,
         limit: 10,
