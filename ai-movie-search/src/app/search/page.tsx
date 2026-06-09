@@ -12,10 +12,12 @@ export default function SearchPage() {
 
     // Handle the search functionality and return the results
     async function handleSearch() {
-        const res = await fetch(`/api/search?q=${query}`);
+        console.log("Searching for:", query);
+        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+        console.log("Response status:", res.status);
         const data = await res.json();
-        console.log(data.movies);
-        setMovies(data.movies);
+        console.log(data.results);
+        setMovies(data.results);
     }
 
 

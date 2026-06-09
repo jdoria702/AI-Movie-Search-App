@@ -1,7 +1,20 @@
 // src/app/api/search/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { getMflixDb } from "@/lib/mongodb";
+import { hybridMovieSearch } from "@/lib/search/hybridSearch";
 
+// Hybrid search: combine atlas search with vector search
+export async function GET(req: NextRequest) {
+    const query = req.nextUrl.searchParams.get("q") ?? "";
+
+    if (!query || typeof query !== "string") {
+        return NextResponse.json({ error: "Missing query" }, { status: 400 });
+    }
+
+    const results = await hybridMovieSearch(query);
+    console.log(results);
+    return NextResponse.json({ results });
+}
 
 // weak regex search
 // export async function GET(req: NextRequest) {
@@ -27,36 +40,36 @@ import { getMflixDb } from "@/lib/mongodb";
 // }
 
 // Atlas search: advanced search experiences like autocomplete and typo-tolerance
-export async function GET (req: NextRequest) {
-    const query = req.nextUrl.searchParams.get("q") ?? "";
-    const db = await getMflixDb();
+// export async function GET (req: NextRequest) {
+//     const query = req.nextUrl.searchParams.get("q") ?? "";
+//     const db = await getMflixDb();
 
-    const movies = await db
-        .collection("movies")
-        .aggregate([
-            {
-                $search: {
-                    index: "default",
-                    text: {
-                        query,
-                        path: ["title", "plot", "genres"],
-                        fuzzy:  {},
-                    },
-                },
-            },
-            {
-                $limit: 10,
-            },
-            {
-                $project: {
-                    title: 1,
-                    plot: 1,
-                    genres: 1,
-                    year: 1,
-                    score: { $meta: "searchScore" },
-                }
-            }
-        ]).toArray();
+//     const movies = await db
+//         .collection("movies")
+//         .aggregate([
+//             {
+//                 $search: {
+//                     index: "default",
+//                     text: {
+//                         query,
+//                         path: ["title", "plot", "genres"],
+//                         fuzzy:  {},
+//                     },
+//                 },
+//             },
+//             {
+//                 $limit: 10,
+//             },
+//             {
+//                 $project: {
+//                     title: 1,
+//                     plot: 1,
+//                     genres: 1,
+//                     year: 1,
+//                     score: { $meta: "searchScore" },
+//                 }
+//             }
+//         ]).toArray();
 
-        return NextResponse.json({ movies });
-}
+//         return NextResponse.json({ movies });
+// }

@@ -24,7 +24,7 @@ const ai = new GoogleGenAI({
 //   return embedding;
 // }
 
-// Voyage embedding example - not currently used in the app, but you can switch to using this instead of the Gemini embedding if you want to experiment with Voyage
+// Voyage embedding
 export async function createEmbedding(text: string): Promise<number[]> {
   const result = await voyage.embed({
     input: [text],
