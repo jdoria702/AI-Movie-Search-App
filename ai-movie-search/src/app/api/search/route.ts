@@ -13,6 +13,8 @@ export async function GET(req: NextRequest) {
 
     const results = await hybridMovieSearch(query);
     console.log(results);
+
+    // returns JSON with a "results" property containing the search results, and a status code of 200 (OK)
     return NextResponse.json({ results });
 }
 

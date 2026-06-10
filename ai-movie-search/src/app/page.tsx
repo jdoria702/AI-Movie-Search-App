@@ -1,3 +1,4 @@
+import AuthButton from "@/components/AuthButton";
 import Image from "next/image";
 
 export default function Home() {
@@ -59,6 +60,8 @@ export default function Home() {
             Documentation
           </a>
         </div>
+        <h1 className="text-3xl font-bold">AI Movie Search</h1>
+        <AuthButton />
       </main>
     </div>
   );
