@@ -25,6 +25,7 @@ export async function hybridMovieSearch(query: string) {
                 title: 1,
                 plot: 1,
                 year: 1,
+                poster: 1,
                 vectorScore: { $meta: "vectorSearchScore" },
             },
         },
@@ -50,7 +51,8 @@ export async function hybridMovieSearch(query: string) {
                 title: 1,
                 plot: 1,
                 year: 1,
-                titleSearchScore: { $meta: "searchScore" },
+                poster: 1,
+                titleScore: { $meta: "searchScore" },
             },
         },
         { $limit: 10 },
@@ -77,7 +79,7 @@ export async function hybridMovieSearch(query: string) {
             ...merged.get(id),
             ...movie,
             vectorScore: merged.get(id)?.vectorScore ?? 0,
-            titleScore: movie.titleSearchScore ?? 0,
+            titleScore: movie.titleScore ?? 0,
         });
     }
 

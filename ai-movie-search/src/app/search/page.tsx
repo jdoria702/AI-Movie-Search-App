@@ -4,13 +4,15 @@
 'use client';
 
 // Use the useState hook to store and remember data
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import AuthButton from "@/components/AuthButton";
+import MovieCard from "@/components/MovieCard";
 
 export default function SearchPage() {
     const [query, setQuery] = useState("");
     const [movies, setMovies] = useState<any[]>([]); // typed as any[] (an array of anything) initializes it to an empty array
+    const [favoriteMovieIds, setFavoriteMovieIds] = useState<Set<string>>(new Set());
 
     // Handle the search functionality and return the results
     async function handleSearch() {
@@ -22,14 +24,33 @@ export default function SearchPage() {
         setMovies(data.results);
     }
 
-    async function favoriteMovie(movie: any) {
+    useEffect(() => {
+        async function loadFavorites() {
+            const res = await fetch("/api/favorites");
+
+            if (!res.ok) return;
+
+            const data = await res.json();
+
+            setFavoriteMovieIds(
+                new Set(data.favorites.map((favorite: any) => String(favorite.movieId)))
+            );
+        }
+
+        loadFavorites();
+    }, []);
+
+    async function toggleFavorite(movie: any) {
+        const movieId = String(movie._id);
+        const isFavorited = favoriteMovieIds.has(movieId);
+
         const res = await fetch("/api/favorites", {
-            method: "POST",
+            method: isFavorited ? "DELETE" : "POST",
             headers: {
             "Content-Type": "application/json",
             },
             body: JSON.stringify({
-            movieId: movie._id,
+            movieId,
             title: movie.title,
             plot: movie.plot,
             poster: movie.poster,
@@ -38,12 +59,22 @@ export default function SearchPage() {
         });
 
         if (!res.ok) {
-            alert("You must be signed in to favorite movies.");
+            alert("Please sign in first.");
             return;
         }
 
-        alert("Movie added to favorites.");
-    }
+        setFavoriteMovieIds((prev) => {
+            const next = new Set(prev);
+
+            if (isFavorited) {
+            next.delete(movieId);
+            } else {
+            next.add(movieId);
+            }
+
+            return next;
+        });
+        }
 
     return (
         <main className="max-w-3xl mx-auto p-6 space-y-4">
@@ -70,16 +101,12 @@ export default function SearchPage() {
 
             <div className="space-y-3">
             {movies.map((movie) => (
-                <div key={movie._id} className="border rounded p-4">
-                    <h2 className="font-semibold">{movie.title}</h2>
-                    <p className="text-sm text-gray-600">{movie.plot}</p>
-                    <button
-                        onClick={() => favoriteMovie(movie)}
-                        className="border rounded px-3 py-1"
-                        >
-                        Favorite
-                    </button>
-                </div>
+                <MovieCard
+                    key={movie._id}
+                    movie={movie}
+                    isFavorited={favoriteMovieIds.has(String(movie._id))}
+                    onToggleFavorite={toggleFavorite}
+                />
             ))}
             </div>
         </main>
