@@ -6,6 +6,7 @@
 // Use the useState hook to store and remember data
 import { useState } from "react";
 import Link from "next/link";
+import AuthButton from "@/components/AuthButton";
 
 export default function SearchPage() {
     const [query, setQuery] = useState("");
@@ -47,6 +48,7 @@ export default function SearchPage() {
     return (
         <main className="max-w-3xl mx-auto p-6 space-y-4">
             <h1 className="text-3xl font-bold">AI Movie Search</h1>
+            <AuthButton />
             <Link href="/favorites" className="text-blue-500 underline">
                 View Favorites
             </Link>
