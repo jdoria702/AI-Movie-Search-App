@@ -3,16 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { getMongoClient } from "@/lib/mongodb";
-
-type FavoriteMovie = {
-  _id: string;
-  movieId: string;
-  title: string;
-  plot?: string;
-  poster?: string;
-  year?: number;
-  createdAt: Date;
-};
+import FavoritesList from "./FavoritesList";
 
 export default async function FavoritesPage() {
   const session = await getServerSession(authOptions);
@@ -33,20 +24,10 @@ export default async function FavoritesPage() {
   return (
     <main className="max-w-5xl mx-auto p-6 space-y-6">
       <h1 className="text-3xl font-bold">Your Favorites</h1>
-
-      {favorites.length === 0 ? (
-        <p>You have no favorite movies yet.</p>
-      ) : (
-        <div className="grid gap-4">
-          {favorites.map((movie: any) => (
-            <div key={movie._id.toString()} className="border rounded p-4">
-              <h2 className="text-xl font-semibold">{movie.title}</h2>
-              {movie.year && <p>{movie.year}</p>}
-              {movie.plot && <p>{movie.plot}</p>}
-            </div>
-          ))}
-        </div>
-      )}
+      <p><a href="/" className="text-blue-500 hover:underline">
+        &larr; Back to Home
+      </a></p>
+      <FavoritesList favorites={favorites} />
     </main>
   );
 }

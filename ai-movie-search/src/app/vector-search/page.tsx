@@ -5,10 +5,12 @@
 
 // Use the useState hook to store and remember data
 import { useState } from "react";
+import MovieCard, { type Movie } from "@/components/MovieCard";
+import { trackUserEvent } from "@/lib/userEvents";
 
 export default function SearchPage() {
     const [query, setQuery] = useState("");
-    const [movies, setMovies] = useState<any[]>([]); // typed as any[] (an array of anything) initializes it to an empty array
+    const [movies, setMovies] = useState<Movie[]>([]);
 
     // Handle the search functionality and return the results
     async function handleSearch() {
@@ -20,9 +22,21 @@ export default function SearchPage() {
             // Equivanlent to: query: query, but since the key and value are the same, we can just write query
             body: JSON.stringify({ query }),
         });
-        const data = await res.json();
+        const data: { movies: Movie[] } = await res.json();
         console.log(data.movies);
         setMovies(data.movies);
+
+        await trackUserEvent({
+            type: "search",
+            query,
+        });
+    }
+
+    function handleMovieClick(movie: Movie) {
+        void trackUserEvent({
+            type: "movie_click",
+            movieId: String(movie._id),
+        });
     }
 
 
@@ -48,10 +62,11 @@ export default function SearchPage() {
 
             <div className="space-y-3">
             {movies.map((movie) => (
-                <div key={movie._id} className="border rounded p-4">
-                <h2 className="font-semibold">{movie.title}</h2>
-                <p className="text-sm text-gray-600">{movie.plot}</p>
-                </div>
+                <MovieCard
+                    key={movie._id}
+                    movie={movie}
+                    onCardClick={handleMovieClick}
+                />
             ))}
             </div>
         </main>

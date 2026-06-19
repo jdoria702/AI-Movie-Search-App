@@ -7,11 +7,12 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import AuthButton from "@/components/AuthButton";
-import MovieCard from "@/components/MovieCard";
+import MovieCard, { type Movie } from "@/components/MovieCard";
+import { trackUserEvent } from "@/lib/userEvents";
 
 export default function SearchPage() {
     const [query, setQuery] = useState("");
-    const [movies, setMovies] = useState<any[]>([]); // typed as any[] (an array of anything) initializes it to an empty array
+    const [movies, setMovies] = useState<Movie[]>([]);
     const [favoriteMovieIds, setFavoriteMovieIds] = useState<Set<string>>(new Set());
 
     // Handle the search functionality and return the results
@@ -19,9 +20,14 @@ export default function SearchPage() {
         console.log("Searching for:", query);
         const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
         console.log("Response status:", res.status);
-        const data = await res.json();
+        const data: { results: Movie[] } = await res.json();
         console.log(data.results);
         setMovies(data.results);
+
+        await trackUserEvent({
+            type: "search",
+            query,
+        });
     }
 
     useEffect(() => {
@@ -30,19 +36,20 @@ export default function SearchPage() {
 
             if (!res.ok) return;
 
-            const data = await res.json();
+            const data: { favorites: Array<{ movieId: string }> } = await res.json();
 
             setFavoriteMovieIds(
-                new Set(data.favorites.map((favorite: any) => String(favorite.movieId)))
+                new Set(data.favorites.map((favorite) => String(favorite.movieId)))
             );
         }
 
         loadFavorites();
     }, []);
 
-    async function toggleFavorite(movie: any) {
+    async function toggleFavorite(movie: Movie) {
         const movieId = String(movie._id);
         const isFavorited = favoriteMovieIds.has(movieId);
+        const eventType = isFavorited ? "favorite_remove" : "favorite_add";
 
         const res = await fetch("/api/favorites", {
             method: isFavorited ? "DELETE" : "POST",
@@ -74,7 +81,19 @@ export default function SearchPage() {
 
             return next;
         });
+
+        await trackUserEvent({
+            type: eventType,
+            movieId,
+        });
         }
+
+    function handleMovieClick(movie: Movie) {
+        void trackUserEvent({
+            type: "movie_click",
+            movieId: String(movie._id),
+        });
+    }
 
     return (
         <main className="max-w-3xl mx-auto p-6 space-y-4">
@@ -106,6 +125,7 @@ export default function SearchPage() {
                     movie={movie}
                     isFavorited={favoriteMovieIds.has(String(movie._id))}
                     onToggleFavorite={toggleFavorite}
+                    onCardClick={handleMovieClick}
                 />
             ))}
             </div>
